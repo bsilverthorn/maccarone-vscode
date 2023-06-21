@@ -33,6 +33,7 @@ if debugger_path:
     # connects to VS Code. If you don't want to pause here comment this
     # line and set breakpoints as appropriate.
     debugpy.breakpoint()
+    # ^ "restart server" will fail unless this line is commented out
 
 SERVER_PATH = os.fspath(pathlib.Path(__file__).parent / "lsp_server.py")
 # NOTE: Set breakpoint in `lsp_server.py` before continuing.
