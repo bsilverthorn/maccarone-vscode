@@ -78,6 +78,20 @@ TOOL_DISPLAY = "Maccarone"
 TOOL_ARGS = []  # default arguments always passed to your tool.
 
 
+# custom LSP command
+@LSP_SERVER.feature("maccarone/apply")
+def apply_command(params: Any) -> dict:
+    LSP_SERVER.show_message_log("Applied maccarone changes " + repr(params))
+
+    document = LSP_SERVER.workspace.get_document(params.documentUri)
+
+    LSP_SERVER.show_message_log("path: " + str(document.path))
+
+    _run_tool_on_document(document, extra_args=["--rewrite"])
+
+    return {}
+
+
 # TODO: If your tool is a linter then update this section.
 # Delete "Linting features" section if your tool is NOT a linter.
 # **********************************************************
@@ -118,6 +132,8 @@ def _linting_helper(document: workspace.Document) -> list[lsp.Diagnostic]:
     # support linting over stdin to be effective. Read, and update
     # _run_tool_on_document and _run_tool functions as needed for your project.
     result = _run_tool_on_document(document)
+    if result is None:
+        raise ValueError()
     return _parse_output_using_regex(result.stdout) if result.stdout else []
 
 
@@ -216,6 +232,8 @@ def _formatting_helper(document: workspace.Document) -> list[lsp.TextEdit] | Non
     # Read, and update_run_tool_on_document and _run_tool functions as needed
     # for your formatter.
     result = _run_tool_on_document(document, use_stdin=True)
+    if result is None:
+        raise ValueError()
     if result.stdout:
         new_source = _match_line_endings(document, result.stdout)
         return [
