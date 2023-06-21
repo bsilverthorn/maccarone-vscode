@@ -67,11 +67,11 @@ LSP_SERVER = server.LanguageServer(
 
 # TODO: Update TOOL_MODULE with the module name for your tool.
 # e.g, TOOL_MODULE = "pylint"
-TOOL_MODULE = "<pytool-module>"
+TOOL_MODULE = "maccarone.scripts.preprocess"
 
 # TODO: Update TOOL_DISPLAY with a display name for your tool.
 # e.g, TOOL_DISPLAY = "Pylint"
-TOOL_DISPLAY = "<pytool-display-name>"
+TOOL_DISPLAY = "Maccarone"
 
 # TODO: Update TOOL_ARGS with default argument you have to pass to your tool in
 # all scenarios.
@@ -88,28 +88,28 @@ TOOL_ARGS = []  # default arguments always passed to your tool.
 #  Pylint: https://github.com/microsoft/vscode-pylint/blob/main/bundled/tool
 
 
-@LSP_SERVER.feature(lsp.TEXT_DOCUMENT_DID_OPEN)
-def did_open(params: lsp.DidOpenTextDocumentParams) -> None:
-    """LSP handler for textDocument/didOpen request."""
-    document = LSP_SERVER.workspace.get_document(params.text_document.uri)
-    diagnostics: list[lsp.Diagnostic] = _linting_helper(document)
-    LSP_SERVER.publish_diagnostics(document.uri, diagnostics)
+# @LSP_SERVER.feature(lsp.TEXT_DOCUMENT_DID_OPEN)
+# def did_open(params: lsp.DidOpenTextDocumentParams) -> None:
+#     """LSP handler for textDocument/didOpen request."""
+#     document = LSP_SERVER.workspace.get_document(params.text_document.uri)
+#     diagnostics: list[lsp.Diagnostic] = _linting_helper(document)
+#     LSP_SERVER.publish_diagnostics(document.uri, diagnostics)
 
 
-@LSP_SERVER.feature(lsp.TEXT_DOCUMENT_DID_SAVE)
-def did_save(params: lsp.DidSaveTextDocumentParams) -> None:
-    """LSP handler for textDocument/didSave request."""
-    document = LSP_SERVER.workspace.get_document(params.text_document.uri)
-    diagnostics: list[lsp.Diagnostic] = _linting_helper(document)
-    LSP_SERVER.publish_diagnostics(document.uri, diagnostics)
+# @LSP_SERVER.feature(lsp.TEXT_DOCUMENT_DID_SAVE)
+# def did_save(params: lsp.DidSaveTextDocumentParams) -> None:
+#     """LSP handler for textDocument/didSave request."""
+#     document = LSP_SERVER.workspace.get_document(params.text_document.uri)
+#     diagnostics: list[lsp.Diagnostic] = _linting_helper(document)
+#     LSP_SERVER.publish_diagnostics(document.uri, diagnostics)
 
 
-@LSP_SERVER.feature(lsp.TEXT_DOCUMENT_DID_CLOSE)
-def did_close(params: lsp.DidCloseTextDocumentParams) -> None:
-    """LSP handler for textDocument/didClose request."""
-    document = LSP_SERVER.workspace.get_document(params.text_document.uri)
-    # Publishing empty diagnostics to clear the entries for this file.
-    LSP_SERVER.publish_diagnostics(document.uri, [])
+# @LSP_SERVER.feature(lsp.TEXT_DOCUMENT_DID_CLOSE)
+# def did_close(params: lsp.DidCloseTextDocumentParams) -> None:
+#     """LSP handler for textDocument/didClose request."""
+#     document = LSP_SERVER.workspace.get_document(params.text_document.uri)
+#     # Publishing empty diagnostics to clear the entries for this file.
+#     LSP_SERVER.publish_diagnostics(document.uri, [])
 
 
 def _linting_helper(document: workspace.Document) -> list[lsp.Diagnostic]:
@@ -193,21 +193,21 @@ def _get_severity(*_codes: list[str]) -> lsp.DiagnosticSeverity:
 #  Black: https://github.com/microsoft/vscode-black-formatter/blob/main/bundled/tool
 
 
-@LSP_SERVER.feature(lsp.TEXT_DOCUMENT_FORMATTING)
-def formatting(params: lsp.DocumentFormattingParams) -> list[lsp.TextEdit] | None:
-    """LSP handler for textDocument/formatting request."""
-    # If your tool is a formatter you can use this handler to provide
-    # formatting support on save. You have to return an array of lsp.TextEdit
-    # objects, to provide your formatted results.
+# @LSP_SERVER.feature(lsp.TEXT_DOCUMENT_FORMATTING)
+# def formatting(params: lsp.DocumentFormattingParams) -> list[lsp.TextEdit] | None:
+#     """LSP handler for textDocument/formatting request."""
+#     # If your tool is a formatter you can use this handler to provide
+#     # formatting support on save. You have to return an array of lsp.TextEdit
+#     # objects, to provide your formatted results.
 
-    document = LSP_SERVER.workspace.get_document(params.text_document.uri)
-    edits = _formatting_helper(document)
-    if edits:
-        return edits
+#     document = LSP_SERVER.workspace.get_document(params.text_document.uri)
+#     edits = _formatting_helper(document)
+#     if edits:
+#         return edits
 
-    # NOTE: If you provide [] array, VS Code will clear the file of all contents.
-    # To indicate no changes to file return None.
-    return None
+#     # NOTE: If you provide [] array, VS Code will clear the file of all contents.
+#     # To indicate no changes to file return None.
+#     return None
 
 
 def _formatting_helper(document: workspace.Document) -> list[lsp.TextEdit] | None:
