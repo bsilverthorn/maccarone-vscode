@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 import { LanguageClient } from 'vscode-languageclient/node';
-import { registerLogger, traceError, traceLog, traceVerbose } from './common/log/logging';
+import { registerLogger, traceError, traceInfo, traceLog, traceVerbose, traceWarn } from './common/log/logging';
 import {
     checkVersion,
     getInterpreterDetails,
@@ -82,6 +82,34 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }),
         registerCommand(`${serverId}.restart`, async () => {
             await runServer();
+        }),
+        registerCommand(`${serverId}.apply`, async () => {
+            traceInfo('updating AI code blocks');
+
+            const editor = vscode.window.activeTextEditor;
+
+            if (!editor) {
+                traceWarn('no active editor');
+
+                return;
+            }
+
+            await editor.document.save();
+
+            const documentUri = editor.document.uri;
+
+            await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Maccarone: updating AI code blocks...',
+                },
+                async (progress, token) => {
+                    const result = await lsClient?.sendRequest('maccarone/apply', {
+                        documentUri: documentUri.toString(),
+                    });
+                    traceInfo('result:', result);
+                },
+            );
         }),
     );
 
