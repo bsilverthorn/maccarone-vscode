@@ -8,7 +8,7 @@
         "name": "Maccarone",
         "module": "maccarone"
     },
-    "publisher": "<my-publisher>",
+    "publisher": "maccarone",
     "license": "MIT",
     "homepage": "https://github.com/bsilverthorn/maccarone",
     "repository": {
