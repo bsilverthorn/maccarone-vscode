@@ -103,7 +103,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
                     location: vscode.ProgressLocation.Notification,
                     title: 'Maccarone: updating AI code blocks...',
                 },
-                async (progress, token) => {
+                async () => {
                     const result = await lsClient?.sendRequest('maccarone/apply', {
                         documentUri: documentUri.toString(),
                     });
