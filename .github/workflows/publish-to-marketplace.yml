@@ -1,0 +1,15 @@
+name: Marketplace
+on:
+  release:
+    types: [published]
+jobs:
+  publish-to-marketplace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.tool-versions'
+      - run: npm install --include=dev
+      - run: npm version $GITHUB_REF_NAME --no-git-tag-version
+      - run: vsce publish
