@@ -32,6 +32,7 @@
     "categories": [
         "Programming Languages"
     ],
+    "icon": "images/macaroni-128px.png",
     "extensionDependencies": [
         "ms-python.python"
     ],
