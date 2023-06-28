@@ -14,4 +14,4 @@ jobs:
       - run: npm version $GITHUB_REF_NAME --no-git-tag-version
       - run: ./node_modules/@vscode/vsce/vsce publish
         env:
-          VSCODE_MARKETPLACE_TOKEN: ${{ secrets.AZURE_DEVOPS_ACCESS_TOKEN }}
+          VSCE_PAT: ${{ secrets.AZURE_DEVOPS_ACCESS_TOKEN }}
