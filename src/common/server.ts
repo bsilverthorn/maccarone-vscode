@@ -45,6 +45,11 @@ async function createServer(
     // Set notification type
     newEnv.LS_SHOW_NOTIFICATION = settings.showNotifications;
 
+    // Set API key
+    if (settings.apiKey) {
+        newEnv.OPENAI_API_KEY = settings.apiKey;
+    }
+
     const args =
         newEnv.USE_DEBUGPY === 'False' || !isDebugScript
             ? settings.interpreter.slice(1).concat([SERVER_SCRIPT_PATH])
