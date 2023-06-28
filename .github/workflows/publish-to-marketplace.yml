@@ -12,4 +12,4 @@ jobs:
           node-version-file: '.tool-versions'
       - run: npm install --include=dev
       - run: npm version $GITHUB_REF_NAME --no-git-tag-version
-      - run: vsce publish
+      - run: ./node_modules/@vscode/vsce/vsce publish
