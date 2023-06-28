@@ -1,24 +1,9 @@
-.vscode/**
-.vscode-test/**
-out/**
-node_modules/**
-src/**
-.gitignore
-.yarnrc
-webpack.config.js
-vsc-extension-quickstart.md
-**/tsconfig.json
-**/.eslintrc.json
-**/*.ts
-.venv/**
-.nox/**
-.github/
-**/__pycache__/**
-**/.pyc
-bundled/libs/bin/**
-noxfile.py
-.pytest_cache/**
-.pylintrc
-**/requirements.txt
-**/requirements.in
-**/tool/_debug_server.py
+# hack - try to whitelist specific package contents
+#
+# see also: https://github.com/microsoft/vscode-vsce/issues/867
+
+**/*
+!README.md
+!LICENSE
+!dist/
+!bundled/
