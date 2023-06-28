@@ -114,6 +114,12 @@
                     ],
                     "scope": "machine",
                     "type": "string"
+                },
+                "maccarone.apiKey": {
+                    "default": "",
+                    "description": "OpenAI API key with GPT-4 access. Default: OPENAI_API_KEY from environment.",
+                    "scope": "machine",
+                    "type": "string"
                 }
             }
         },
