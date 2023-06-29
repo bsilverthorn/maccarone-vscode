@@ -135,7 +135,28 @@
                 "category": "Maccarone",
                 "command": "maccarone.apply"
             }
-        ]
+        ],
+        "grammars": [
+            {
+                "path": "./syntaxes/injection.json",
+                "scopeName": "maccarone-guidance.injection",
+                "injectTo": [
+                    "source.python"
+                ]
+            }
+        ],
+        "configurationDefaults": {
+            "editor.tokenColorCustomizations": {
+                "textMateRules": [
+                    {
+                        "scope": "keyword.maccarone-guidance",
+                        "settings": {
+                            "foreground": "#00FFFF"
+                        }
+                    }
+                ]
+            }
+        }
     },
     "dependencies": {
         "fs-extra": "^11.1.1",

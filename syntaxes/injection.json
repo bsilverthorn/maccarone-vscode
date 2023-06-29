@@ -1,0 +1,15 @@
+{
+  "scopeName": "maccarone-guidance.injection",
+  "injectionSelector": "L:source.python",
+  "patterns": [
+    {
+      "include": "#maccarone-guidance"
+    }
+  ],
+  "repository": {
+    "maccarone-guidance": {
+      "match": "#<<.*>>",
+      "name": "keyword.maccarone-guidance"
+    }
+  }
+}
