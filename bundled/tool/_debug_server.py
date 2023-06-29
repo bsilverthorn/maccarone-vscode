@@ -22,8 +22,7 @@ if debugger_path:
 
     update_sys_path(debugger_path)
 
-    # pylint: disable=wrong-import-position,import-error
-    import debugpy
+    import debugpy # pyright: ignore
 
     # 5678 is the default port, If you need to change it update it here
     # and in launch.json.
