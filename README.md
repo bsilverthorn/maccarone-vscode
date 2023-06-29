@@ -9,7 +9,7 @@ This README documents the VS Code extension _only_.
 
 The extension provides a single command, `Refresh AI Blocks`, which updates the Maccarone code sections `#<<...>>` in the current file. Run it using the VS Code [command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) (`Ctrl+Shift+P`):
 
-![_screencap_](https://github.com/bsilverthorn/maccarone-vscode/blob/main/images/screencap-20230629.gif)
+![_screencap_](./images/screencap-20230629.gif)
 
 ## Setup
 

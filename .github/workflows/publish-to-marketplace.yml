@@ -12,6 +12,6 @@ jobs:
           node-version-file: '.tool-versions'
       - run: npm install --include=dev
       - run: npm version $GITHUB_REF_NAME --no-git-tag-version
-      - run: ./node_modules/@vscode/vsce/vsce publish
+      - run: ./node_modules/@vscode/vsce/vsce publish --baseImagesUrl 'https://github.com/bsilverthorn/maccarone-vscode/blob/main/'
         env:
           VSCE_PAT: ${{ secrets.AZURE_DEVOPS_ACCESS_TOKEN }}
