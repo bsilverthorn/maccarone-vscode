@@ -2,7 +2,7 @@
     "name": "maccarone",
     "displayName": "Maccarone",
     "description": "AI-managed code blocks in your Python source.",
-    "version": "0.0.1",
+    "version": "0.0.0",
     "preview": false,
     "qna": false,
     "serverInfo": {
