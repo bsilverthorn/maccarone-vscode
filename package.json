@@ -36,7 +36,7 @@
     "categories": [
         "Programming Languages"
     ],
-    "icon": "images/marketplace-128px.png",
+    "icon": "images/marketplace-icon.png",
     "extensionDependencies": [
         "ms-python.python"
     ],
