@@ -3,7 +3,8 @@
     "displayName": "Maccarone",
     "description": "AI-managed code blocks in your Python source.",
     "version": "0.0.1",
-    "preview": true,
+    "preview": false,
+    "qna": false,
     "serverInfo": {
         "name": "Maccarone",
         "module": "maccarone"
@@ -19,12 +20,15 @@
         "url": "https://github.com/bsilverthorn/maccarone/issues"
     },
     "galleryBanner": {
-        "color": "#1e415e",
-        "theme": "dark"
+        "color": "#EFEFF3",
+        "theme": "light"
     },
     "keywords": [
         "python",
-        "maccarone"
+        "chatgpt",
+        "copilot",
+        "ai",
+        "assistant"
     ],
     "engines": {
         "vscode": "^1.75.0"
