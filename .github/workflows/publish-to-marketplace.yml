@@ -10,6 +10,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.tool-versions'
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+      - run: nox --session setup
       - run: npm install --include=dev
       - run: npm version $GITHUB_REF_NAME --no-git-tag-version
       - run: ./node_modules/@vscode/vsce/vsce publish --baseImagesUrl 'https://raw.githubusercontent.com/bsilverthorn/maccarone-vscode/main/'
