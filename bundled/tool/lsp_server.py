@@ -24,6 +24,8 @@ def update_sys_path(path_to_add: str, strategy: str) -> None:
             sys.path.insert(0, path_to_add)
         elif strategy == "fromEnvironment":
             sys.path.append(path_to_add)
+        else:
+            raise ValueError("unrecognized import strategy", strategy)
 
 
 # Ensure that we can import LSP libraries, and other bundled libraries.
