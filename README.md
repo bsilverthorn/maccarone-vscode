@@ -15,6 +15,6 @@ The extension provides a single command, `Refresh AI Blocks`, which updates the 
 
 Install the free extension from [the VS Code marketplace](https://marketplace.visualstudio.com/items?itemName=maccarone.maccarone).
 
-Make sure you have Python **3.10+** installed and configured as the default interpreter in VS Code.
+Make sure you have Python **3.8+** installed and configured as the default interpreter in VS Code.
 
 You'll need an OpenAI API key **with GPT-4 access**. Set it in your environment as `OPENAI_API_KEY`, or configure it in VS Code under the Maccarone extension settings.
