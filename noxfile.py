@@ -35,13 +35,8 @@ def _check_files(names: List[str]) -> None:
 
 
 def _update_pip_packages(session: nox.Session) -> None:
-    session.run("pip-compile", "--generate-hashes", "--upgrade", "./requirements.in")
-    session.run(
-        "pip-compile",
-        "--generate-hashes",
-        "--upgrade",
-        "./src/test/python_tests/requirements.in",
-    )
+    _run_pip_compile_upgrade(session, "./requirements.in")
+    _run_pip_compile_upgrade(session, "./src/test/python_tests/requirements.in")
 
 
 def _get_package_data(package):
@@ -87,16 +82,20 @@ def _update_npm_packages(session: nox.Session) -> None:
     package_json_path.write_text(new_package_json, encoding="utf-8")
     session.run("npm", "install", external=True)
 
-
-def _setup_template_environment(session: nox.Session) -> None:
-    session.install("wheel", "pip-tools")
-    session.run("pip-compile", "--generate-hashes", "--upgrade", "./requirements.in")
+def _run_pip_compile_upgrade(session: nox.Session, file_path: str) -> None:
     session.run(
         "pip-compile",
         "--generate-hashes",
         "--upgrade",
-        "./src/test/python_tests/requirements.in",
+        "--resolver=backtracking",
+        file_path,
     )
+
+def _setup_template_environment(session: nox.Session) -> None:
+    session.install("wheel", "pip-tools")
+
+    _update_pip_packages(session)
+
     _install_bundle(session)
 
 
