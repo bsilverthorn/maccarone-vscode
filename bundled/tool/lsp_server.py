@@ -43,6 +43,18 @@ import lsp_utils as utils
 import lsprotocol.types as lsp
 from pygls import server, uris, workspace
 
+from lsprotocol.types import (
+    FoldingRange,
+    FoldingRangeKind,
+    FoldingRangeParams,
+)
+from maccarone.preprocessor import (
+    PresentPiece,
+    MissingPiece,
+    raw_source_to_pieces,
+)
+from maccarone.scripts.preprocess import preprocess
+
 WORKSPACE_SETTINGS = {}
 GLOBAL_SETTINGS = {}
 RUNNER = pathlib.Path(__file__).parent / "lsp_runner.py"
@@ -89,7 +101,14 @@ def apply_command(params: Any) -> dict:
 
     LSP_SERVER.show_message_log("path: " + str(document.path))
 
-    _run_tool_on_document(document, extra_args=["--rewrite"])
+    if document.path is None:
+        return {}
+
+    preprocess(
+        mn_path=document.path,
+        rewrite=True,
+        print_=False,
+    )
 
     return {}
 
@@ -273,6 +292,47 @@ def _match_line_endings(document: workspace.Document, text: str) -> str:
 # Formatting features ends here
 # **********************************************************
 
+# **********************************************************
+# Folding features
+# **********************************************************
+
+@LSP_SERVER.feature(lsp.TEXT_DOCUMENT_FOLDING_RANGE)
+def folding(params: FoldingRangeParams) -> Optional[list[FoldingRange]]:
+    document = LSP_SERVER.workspace.get_document(params.text_document.uri)
+
+    LSP_SERVER.show_message_log("path: " + str(document.path))
+
+    if document.path is None:
+        return None
+
+    with open(document.path, "r") as source_file:
+        source_code = source_file.read()
+
+    pieces = raw_source_to_pieces(source_code)
+    line_num = 0
+    ranges = []
+
+    for piece in pieces:
+        text = source_code[piece.start:piece.end]
+
+        if isinstance(piece, PresentPiece):
+            line_num += text.count("\n")
+        elif isinstance(piece, MissingPiece):
+            start_line = line_num
+            line_num += text.count("\n")
+
+            ranges.append((start_line, line_num - 1))
+        else:
+            log_warning(f"unknown type of source piece: {type(piece)}")
+
+    return [
+        FoldingRange(
+            start_line=sl,
+            end_line=el,
+            kind=FoldingRangeKind.Region,
+        )
+        for (sl, el) in ranges
+    ]
 
 # **********************************************************
 # Required Language Server Initialization and Exit handlers.
