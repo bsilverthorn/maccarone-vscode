@@ -43,6 +43,8 @@ import lsp_utils as utils
 import lsprotocol.types as lsp
 from pygls import server, uris, workspace
 
+from maccarone.scripts.preprocess import preprocess
+
 WORKSPACE_SETTINGS = {}
 GLOBAL_SETTINGS = {}
 RUNNER = pathlib.Path(__file__).parent / "lsp_runner.py"
@@ -89,7 +91,14 @@ def apply_command(params: Any) -> dict:
 
     LSP_SERVER.show_message_log("path: " + str(document.path))
 
-    _run_tool_on_document(document, extra_args=["--rewrite"])
+    if document.path is None:
+        return {}
+
+    preprocess(
+        mn_path=document.path,
+        rewrite=True,
+        print_=False,
+    )
 
     return {}
 
