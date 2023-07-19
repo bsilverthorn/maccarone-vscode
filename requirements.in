@@ -11,4 +11,4 @@
 # Required packages
 pygls
 packaging
-maccarone==0.1.6
+maccarone==0.1.7
