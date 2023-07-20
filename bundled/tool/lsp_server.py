@@ -299,15 +299,7 @@ def _match_line_endings(document: workspace.Document, text: str) -> str:
 @LSP_SERVER.feature(lsp.TEXT_DOCUMENT_FOLDING_RANGE)
 def folding(params: FoldingRangeParams) -> Optional[list[FoldingRange]]:
     document = LSP_SERVER.workspace.get_document(params.text_document.uri)
-
-    LSP_SERVER.show_message_log("path: " + str(document.path))
-
-    if document.path is None:
-        return None
-
-    with open(document.path, "r") as source_file:
-        source_code = source_file.read()
-
+    source_code = document.source
     pieces = raw_source_to_pieces(source_code)
     line_num = 0
     ranges = []
