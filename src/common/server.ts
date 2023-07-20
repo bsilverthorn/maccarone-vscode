@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 import * as fsapi from 'fs-extra';
+import { window, commands } from 'vscode';
 import { Disposable, env, LogOutputChannel } from 'vscode';
 import { State } from 'vscode-languageclient';
 import {
@@ -18,6 +19,21 @@ import { getLSClientTraceLevel, getProjectRoot } from './utilities';
 import { isVirtualWorkspace } from './vscodeapi';
 
 export type IInitOptions = { settings: ISettings[]; globalSettings: ISettings };
+
+async function showMissingKeyModal() {
+    traceError('missing OpenAI API key');
+
+    const goToSettings = '→ Settings';
+    const options = {
+        modal: true,
+        detail: 'Maccarone requires an OpenAI API key.\n\nConfigure it in VS Code settings, or set `OPENAI_API_KEY` in your environment.',
+    };
+    const choice = await window.showErrorMessage('OpenAI API key not set', options, goToSettings);
+
+    if (choice === goToSettings) {
+        commands.executeCommand('workbench.action.openSettings', 'maccarone.apiKey');
+    }
+}
 
 async function createServer(
     settings: ISettings,
@@ -48,6 +64,10 @@ async function createServer(
     // Set API key
     if (settings.apiKey) {
         newEnv.OPENAI_API_KEY = settings.apiKey;
+    }
+
+    if (!newEnv.OPENAI_API_KEY) {
+        showMissingKeyModal();
     }
 
     const args =
