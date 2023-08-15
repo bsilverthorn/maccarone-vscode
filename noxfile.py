@@ -343,28 +343,6 @@ def lint(session: nox.Session) -> None:
     session.run("npm", "run", "lint", external=True)
 
 
-@nox.session()
-def build_package(session: nox.Session) -> None:
-    """Builds VSIX package for publishing."""
-    _check_files(["README.md", "LICENSE"])
-    _setup_template_environment(session)
-    session.run("npm", "install", external=True)
-    plat = TARGET_PLATFORM_NAME[platform.system()]
-    arch = TARGET_ARCH_NAME[platform.system()][platform.machine().lower()]
-    target = f"{plat}-{arch}"
-    session.run(
-        "npm",
-        "run",
-        "vsce-package",
-        "--",
-        "--out",
-        f"maccarone-{target}.vsix",
-        "--target",
-        target,
-        external=True,
-    )
-
-
 @nox.session(python="3.8")  # must use old Python to get backports
 def update_packages(session: nox.Session) -> None:
     """Update pip and npm packages."""

@@ -33,6 +33,9 @@ jobs:
             arch: x64
             npm_config_arch: x64
     runs-on: ${{ matrix.os }}
+    env:
+      PIP_ARCH: ${{ matrix.arch }}
+      TARGET_NAME: ${{ matrix.platform }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -49,10 +52,10 @@ jobs:
         env:
           npm_config_arch: ${{ matrix.npm_config_arch }}
       - run: npm version $GITHUB_REF_NAME --no-git-tag-version
-      - run: nox --session build_package
+      - run: npx vsce package --out maccarone-${{ env.TARGET_NAME }}.vsix --target ${{ env.TARGET_NAME }}
       - uses: actions/upload-artifact@v3
         with:
-          name: "${{ matrix.platform }}-${{ matrix.arch }}"
+          name: ${{ env.TARGET_NAME }}
           path: "*.vsix"
   publish-to-marketplace:
     runs-on: ubuntu-latest
