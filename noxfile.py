@@ -5,43 +5,233 @@
 import json
 import os
 import pathlib
-import urllib.request as url_lib
+import platform
+import re
+import shutil
+from dataclasses import dataclass
+from pprint import pprint
 from typing import List
+from urllib.parse import urlparse
+from urllib.request import urlopen
+from zipfile import ZipFile
 
 import nox  # pylint: disable=import-error
+
+NATIVE_SUFFIXES = (".so", ".dylib", ".pyd", ".dll")
+
+PKG_VERSION_RE = re.compile(r"^(\S+)==(\S+)")
+PKG_HASH_RE = re.compile(r"\s*--hash=(\S+):(\S+)")
+
+ROOT = pathlib.Path(__file__).parent
+WHEEL_DIR = ROOT / "wheels"
+REQUIREMENTS = ROOT / "requirements.txt"
+
+PY_VERS = ("cp312", "cp311", "cp310", "cp39", "cp38")
+PLAT_NAMES = {
+    "Windows": "win",
+    "Darwin": "macosx",
+    "Linux": "manylinux",
+}
+PLAT_ARCH = {
+    "Windows": {
+        "arm64": (),
+        "x64": ("win32", "amd64"),
+    },
+    "Darwin": {
+        "arm64": ("arm64", "universal2"),
+        "x64": ("x86_64", "intel", "universal2"),
+    },
+    "Linux": {
+        "arm64": ("aarch64", "arm64"),
+        "x64": ("x86_64", "i686"),
+    },
+}
+TARGET_PLATFORM_NAME = {
+    "Darwin": "darwin",
+    "Linux": "linux",
+    "Windows": "win32",
+}
+TARGET_ARCH_NAME = {
+    "Darwin": {
+        "arm64": "arm64",
+        "x86_64": "x64",
+    },
+    "Linux": {
+        "aarch64": "arm64",
+        "x86_64": "x64",
+    },
+    "Windows": {
+        "arm64": "arm64",
+        "amd64": "x64",
+        "x86_64": "x64",
+    },
+}
+
+SYS_NAME = platform.system()
+PIP_ARCH = os.environ.get("PIP_ARCH", "")
+if not PIP_ARCH:
+    arch = platform.machine().lower()
+    if arch in ("x86_64", "amd64"):
+        PIP_ARCH = "x64"
+    elif arch in ("arm64", "aarch64"):
+        PIP_ARCH = "arm64"
+    else:
+        raise RuntimeError(f"PIP_ARCH not provided, unexpected arch {arch!r}")
+
+
+@dataclass
+class Hash:
+    algo: str
+    value: str
+
+
+@dataclass
+class Requirement:
+    name: str
+    version: str
+    hashes: List[Hash]
+
+
+def _requirements() -> List[Requirement]:
+    """Parse requirements.txt for package name, version, and allowed hashes"""
+    content = REQUIREMENTS.read_text()
+
+    name = ""
+    version = ""
+    hashes: List[Hash] = []
+    results: List[Requirement] = []
+
+    for line in content.splitlines():
+        hash_match = PKG_HASH_RE.match(line)
+        if hash_match:
+            algo, value = hash_match.groups()
+            hashes.append(Hash(algo, value))
+            continue
+
+        pkg_match = PKG_VERSION_RE.match(line)
+        if pkg_match:
+            if name and version:
+                results.append(Requirement(name, version, hashes))
+                hashes = []
+            name, version = pkg_match.groups()
+
+    return results
+
+
+def _find_wheels() -> List[str]:
+    """Parse PyPI json data for requirements and filter to wheels for platform/arch"""
+    plat_markers = [
+        f"{py_ver}-{plat_name}"
+        for py_ver in PY_VERS
+        for plat_name in (PLAT_NAMES[SYS_NAME],)
+    ]
+    arch_markers = PLAT_ARCH[SYS_NAME][PIP_ARCH]
+    print(SYS_NAME, plat_markers, arch_markers)
+
+    target_urls: List[str] = []
+    for req in _requirements():
+        with urlopen(f"https://pypi.org/pypi/{req.name}/json") as response:
+            data = json.loads(response.read())
+            dists = data["releases"].get(req.version, [])
+
+            for dist in dists:
+                url = dist["url"]
+                dist_markers = dist["filename"].rpartition("-")[2]
+                if any(plat_marker in url for plat_marker in plat_markers) and any(
+                    arch_marker in dist_markers for arch_marker in arch_markers
+                ):
+                    digests = dist["digests"]
+                    for req_hash in req.hashes:
+                        if digests.get(req_hash.algo, "") == req_hash.value:
+                            target_urls.append(url)
+                            break
+
+    pprint(target_urls)
+    return target_urls
+
+
+def _download_wheels() -> pathlib.Path:
+    """Download all relevant wheels for the target platform/arch"""
+    target_urls = _find_wheels()
+
+    WHEEL_DIR.mkdir(exist_ok=True)
+
+    for url in target_urls:
+        parts = urlparse(url)
+        path = WHEEL_DIR / pathlib.Path(parts.path).name
+        if path.is_file():
+            continue
+
+        print(url, "->", path)
+        with urlopen(url) as response:
+            path.write_bytes(response.read())
+
+
+def _install_wheels(session: nox.Session) -> None:
+    """Download and install wheels for the target platform/arch"""
+    _download_wheels()
+
+    lib_dir = ROOT / "bundled" / "libs"
+
+    for path in WHEEL_DIR.iterdir():
+        if path.is_file() and path.suffix == ".whl":
+            with ZipFile(path, "r") as wheel:
+                for file_info in wheel.infolist():
+                    if file_info.filename.lower().endswith(NATIVE_SUFFIXES):
+                        print("\t" + file_info.filename)
+                        so_path = wheel.extract(file_info.filename, lib_dir)
+                        print("\t\t => " + so_path)
 
 
 def _install_bundle(session: nox.Session) -> None:
     session.install(
+        "-vvv",
         "-t",
         "./bundled/libs",
         "--no-cache-dir",
+        "--python-version",
+        "3.8",  # ensure we get backports
         "--implementation",
-        "py",
+        "cp",  # required to get upstream libcst wheels
+        "--only-binary",
+        ":all:",
+        "--no-binary",
+        "pyyaml",  # doesn't ship a none-any wheel
         "--no-deps",
         "--upgrade",
         "-r",
         "./requirements.txt",
     )
+    _install_wheels(session)
 
 
 def _check_files(names: List[str]) -> None:
-    root_dir = pathlib.Path(__file__).parent
     for name in names:
-        file_path = root_dir / name
+        file_path = ROOT / name
         lines: List[str] = file_path.read_text().splitlines()
         if any(line for line in lines if line.startswith("# TODO:")):
             raise Exception(f"Please update {os.fspath(file_path)}.")
 
 
 def _update_pip_packages(session: nox.Session) -> None:
-    _run_pip_compile_upgrade(session, "./requirements.in")
-    _run_pip_compile_upgrade(session, "./src/test/python_tests/requirements.in")
+    session.install("wheel", "pip-tools")
+    session.run(
+        "pip-compile",
+        "--generate-hashes",
+        "--upgrade",
+        "./requirements.in",
+    )
+    session.run(
+        "pip-compile",
+        "--generate-hashes",
+        "--upgrade",
+        "./src/test/python_tests/requirements.in",
+    )
 
 
 def _get_package_data(package):
     json_uri = f"https://registry.npmjs.org/{package}"
-    with url_lib.urlopen(json_uri) as response:
+    with urlopen(json_uri) as response:
         return json.loads(response.read())
 
 
@@ -82,21 +272,29 @@ def _update_npm_packages(session: nox.Session) -> None:
     package_json_path.write_text(new_package_json, encoding="utf-8")
     session.run("npm", "install", external=True)
 
-def _run_pip_compile_upgrade(session: nox.Session, file_path: str) -> None:
-    session.run(
-        "pip-compile",
-        "--generate-hashes",
-        "--upgrade",
-        "--resolver=backtracking",
-        file_path,
-    )
 
 def _setup_template_environment(session: nox.Session) -> None:
     session.install("wheel", "pip-tools")
 
-    _update_pip_packages(session)
-
     _install_bundle(session)
+
+
+@nox.session()
+def clean(session: nox.Session) -> None:
+    shutil.rmtree((ROOT / "bundled" / "libs"), ignore_errors=True)
+    shutil.rmtree((ROOT / "wheels"), ignore_errors=True)
+
+
+@nox.session()
+def find_wheels(session: nox.Session) -> None:
+    """Find relevant wheels and list their URLs"""
+    _find_wheels()
+
+
+@nox.session()
+def download_wheels(session: nox.Session) -> None:
+    """Download wheels needed to build the package."""
+    _download_wheels()
 
 
 @nox.session()
@@ -148,13 +346,26 @@ def lint(session: nox.Session) -> None:
 @nox.session()
 def build_package(session: nox.Session) -> None:
     """Builds VSIX package for publishing."""
-    _check_files(["README.md", "LICENSE", "SECURITY.md", "SUPPORT.md"])
+    _check_files(["README.md", "LICENSE"])
     _setup_template_environment(session)
     session.run("npm", "install", external=True)
-    session.run("npm", "run", "vsce-package", external=True)
+    plat = TARGET_PLATFORM_NAME[platform.system()]
+    arch = TARGET_ARCH_NAME[platform.system()][platform.machine()]
+    target = f"{plat}-{arch}"
+    session.run(
+        "npm",
+        "run",
+        "vsce-package",
+        "--",
+        "--out",
+        f"maccarone-{target}.vsix",
+        "--target",
+        target,
+        external=True,
+    )
 
 
-@nox.session()
+@nox.session(python="3.8")  # must use old Python to get backports
 def update_packages(session: nox.Session) -> None:
     """Update pip and npm packages."""
     session.install("wheel", "pip-tools")
