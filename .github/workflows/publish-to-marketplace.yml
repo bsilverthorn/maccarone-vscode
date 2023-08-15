@@ -51,7 +51,7 @@ jobs:
       - run: npm install --include=dev
         env:
           npm_config_arch: ${{ matrix.npm_config_arch }}
-      - run: npm version $GITHUB_REF_NAME --no-git-tag-version
+      - run: npm version ${{ github.ref_name }} --no-git-tag-version
       - run: npx vsce package --out maccarone-${{ env.TARGET_NAME }}.vsix --target ${{ env.TARGET_NAME }}
       - uses: actions/upload-artifact@v3
         with:
