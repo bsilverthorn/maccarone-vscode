@@ -55,6 +55,7 @@ jobs:
           path: "*.vsix"
   publish-to-marketplace:
     runs-on: ubuntu-latest
+    needs: build-packages
     steps:
       - uses: actions/download-artifact@v3
       - uses: actions/checkout@v3
