@@ -12,3 +12,4 @@ bundled/libs/
 **/.vs
 /venv*/
 .envrc
+/wheels/
