@@ -350,7 +350,7 @@ def build_package(session: nox.Session) -> None:
     _setup_template_environment(session)
     session.run("npm", "install", external=True)
     plat = TARGET_PLATFORM_NAME[platform.system()]
-    arch = TARGET_ARCH_NAME[platform.system()][platform.machine()]
+    arch = TARGET_ARCH_NAME[platform.system()][platform.machine().lower()]
     target = f"{plat}-{arch}"
     session.run(
         "npm",
