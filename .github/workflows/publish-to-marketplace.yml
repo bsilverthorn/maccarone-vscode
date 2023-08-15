@@ -3,10 +3,39 @@ on:
   release:
     types: [published]
 jobs:
-  publish-to-marketplace:
-    runs-on: ubuntu-latest
+  build-packages:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: darwin
+            arch: arm64
+            npm_config_arch: arm64
+          - os: macos-latest
+            platform: darwin
+            arch: x64
+            npm_config_arch: x64
+          - os: ubuntu-latest
+            platform: linux
+            arch: arm64
+            npm_config_arch: arm64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+            npm_config_arch: x64
+          - os: windows-latest
+            platform: win32
+            arch: arm64
+            npm_config_arch: arm64
+          - os: windows-latest
+            platform: win32
+            arch: x64
+            npm_config_arch: x64
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.tool-versions'
@@ -16,7 +45,24 @@ jobs:
       - run: pip install nox
       - run: nox --session setup
       - run: npm install --include=dev
+        env:
+          npm_config_arch: ${{ matrix.npm_config_arch }}
       - run: npm version $GITHUB_REF_NAME --no-git-tag-version
-      - run: ./node_modules/@vscode/vsce/vsce publish --baseImagesUrl 'https://raw.githubusercontent.com/bsilverthorn/maccarone-vscode/main/'
+      - run: nox --session build_package
+      - uses: actions/upload-artifact@v3
+        with:
+          name: "${{ matrix.platform }}-${{ matrix.arch }}"
+          path: "*.vsix"
+  publish-to-marketplace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.tool-versions'
+      - run: ./node_modules/@vscode/vsce/vsce publish --packagePath $(find . -iname *.vsix)
         env:
           VSCE_PAT: ${{ secrets.AZURE_DEVOPS_ACCESS_TOKEN }}
