@@ -64,6 +64,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.tool-versions'
+      - run: npm install --include=dev
       - run: ./node_modules/@vscode/vsce/vsce publish --packagePath $(find . -iname *.vsix)
         env:
           VSCE_PAT: ${{ secrets.AZURE_DEVOPS_ACCESS_TOKEN }}
