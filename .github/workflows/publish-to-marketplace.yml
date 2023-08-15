@@ -2,6 +2,7 @@ name: Marketplace
 on:
   release:
     types: [published]
+  workflow_dispatch:
 jobs:
   build-packages:
     strategy:
