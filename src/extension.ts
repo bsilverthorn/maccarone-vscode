@@ -83,7 +83,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         registerCommand(`${serverId}.restart`, async () => {
             await runServer();
         }),
-        registerCommand(`${serverId}.apply`, async () => {
+        registerCommand(`${serverId}.apply`, async (blockAtLine?) => {
             traceInfo('updating AI code blocks');
 
             const editor = vscode.window.activeTextEditor;
@@ -101,11 +101,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             await vscode.window.withProgress(
                 {
                     location: vscode.ProgressLocation.Notification,
-                    title: 'Maccarone: updating AI code blocks...',
+                    title: 'Maccarone: updating AI-managed code...',
                 },
                 async () => {
                     const result = await lsClient?.sendRequest('maccarone/apply', {
                         documentUri: documentUri.toString(),
+                        blockAtLine: blockAtLine !== undefined ? blockAtLine : null,
                     });
                     traceInfo('result:', result);
                 },

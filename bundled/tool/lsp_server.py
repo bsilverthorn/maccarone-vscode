@@ -47,7 +47,10 @@ from lsprotocol.types import (
     FoldingRange,
     FoldingRangeKind,
     FoldingRangeParams,
+    CodeAction,
+    CodeActionKind,
 )
+from maccarone.openai import ChatAPI
 from maccarone.preprocessor import (
     PresentPiece,
     MissingPiece,
@@ -92,12 +95,20 @@ TOOL_DISPLAY = "Maccarone"
 TOOL_ARGS = []  # default arguments always passed to your tool.
 
 
-# custom LSP command
+# **********************************************************
+# Custom commands
+# **********************************************************
+
 @LSP_SERVER.feature("maccarone/apply")
 def apply_command(params: Any) -> dict:
-    LSP_SERVER.show_message_log("Applied maccarone changes " + repr(params))
+    LSP_SERVER.show_message_log("applying maccarone changes " + repr(params))
 
     document = LSP_SERVER.workspace.get_document(params.documentUri)
+
+    if params.blockAtLine is None:
+        block_at_line = None
+    else:
+        block_at_line = params.blockAtLine + 1
 
     LSP_SERVER.show_message_log("path: " + str(document.path))
 
@@ -108,10 +119,10 @@ def apply_command(params: Any) -> dict:
         mn_path=document.path,
         rewrite=True,
         print_=False,
+        block_at_line=block_at_line,
     )
 
     return {}
-
 
 # TODO: If your tool is a linter then update this section.
 # Delete "Linting features" section if your tool is NOT a linter.
@@ -299,19 +310,17 @@ def _match_line_endings(document: workspace.Document, text: str) -> str:
 @LSP_SERVER.feature(lsp.TEXT_DOCUMENT_FOLDING_RANGE)
 def folding(params: FoldingRangeParams) -> Optional[list[FoldingRange]]:
     document = LSP_SERVER.workspace.get_document(params.text_document.uri)
-    source_code = document.source
-    pieces = raw_source_to_pieces(source_code)
+    source = document.source
+    pieces = raw_source_to_pieces(source, None)
     line_num = 0
     ranges = []
 
     for piece in pieces:
-        text = source_code[piece.start:piece.end]
-
         if isinstance(piece, PresentPiece):
-            line_num += text.count("\n")
+            line_num += source.count("\n", piece.start, piece.end)
         elif isinstance(piece, MissingPiece):
             start_line = line_num
-            line_num += text.count("\n")
+            line_num += source.count("\n", piece.start, piece.end)
 
             ranges.append((start_line, line_num - 1))
         else:
@@ -325,6 +334,40 @@ def folding(params: FoldingRangeParams) -> Optional[list[FoldingRange]]:
         )
         for (sl, el) in ranges
     ]
+
+# **********************************************************
+# Code Actions
+# **********************************************************
+
+@LSP_SERVER.feature(lsp.TEXT_DOCUMENT_CODE_ACTION)
+def code_action(ls, params: lsp.CodeActionParams):
+    document = LSP_SERVER.workspace.get_document(params.text_document.uri)
+    source = document.source
+    pieces = raw_source_to_pieces(source, None)
+    action = CodeAction(
+        title="Update AI Block",
+        kind=CodeActionKind.RefactorRewrite,
+        command={
+            "title": "Update AI Block",
+            "command": "maccarone.apply",
+            "arguments": [params.range.start.line],
+        },
+    )
+    line_num = 0
+
+    for piece in pieces:
+        if isinstance(piece, PresentPiece):
+            line_num += source.count("\n", piece.start, piece.end)
+        elif isinstance(piece, MissingPiece):
+            start_line = line_num
+            line_num += source.count("\n", piece.start, piece.end)
+
+            if start_line <= params.range.start.line <= line_num:
+                return [action]
+        else:
+            log_warning(f"unknown type of source piece: {type(piece)}")
+
+    return []
 
 # **********************************************************
 # Required Language Server Initialization and Exit handlers.
