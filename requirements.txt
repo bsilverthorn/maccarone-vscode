@@ -278,9 +278,9 @@ lsprotocol==2023.0.0a2 \
     --hash=sha256:80aae7e39171b49025876a524937c10be2eb986f4be700ca22ee7d186b8488aa \
     --hash=sha256:c4f2f77712b50d065b17f9b50d2b88c480dc2ce4bbaa56eea8269dbf54bc9701
     # via pygls
-maccarone==0.1.7 \
-    --hash=sha256:599a578a5bf51f11c8e448d4b18adf5f88a5a660293920ced5692a7c7632788b \
-    --hash=sha256:64e2d4bc5019f49016c0ec4c41a28812de044a44fc9ae49b735f36d89d2cbd13
+maccarone==0.1.8 \
+    --hash=sha256:83c4562d8249ba3b7260cc9d3b8e5944d8640cc8dcbeebbe0a184dced0fe586c \
+    --hash=sha256:df427a32f7287c3715dc6b1355b8dd8525948ed3e8d8c4b8428073ed5ca66d94
     # via -r ./requirements.in
 multidict==6.0.4 \
     --hash=sha256:01a3a55bd90018c9c080fbb0b9f4891db37d148a0a18722b42f94694f8b6d4c9 \

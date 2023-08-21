@@ -1,5 +1,12 @@
 After changing dependencies:
 
 ```
-nox --session setup
+python -m pip install pip-tools
+pip-compile --generate-hashes --upgrade ./requirements.in
+```
+
+Optional:
+
+```
+nox --session setup (to bundle libs in local dev)
 ```
