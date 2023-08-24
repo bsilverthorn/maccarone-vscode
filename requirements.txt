@@ -278,9 +278,9 @@ lsprotocol==2023.0.0a2 \
     --hash=sha256:80aae7e39171b49025876a524937c10be2eb986f4be700ca22ee7d186b8488aa \
     --hash=sha256:c4f2f77712b50d065b17f9b50d2b88c480dc2ce4bbaa56eea8269dbf54bc9701
     # via pygls
-maccarone==0.1.8 \
-    --hash=sha256:83c4562d8249ba3b7260cc9d3b8e5944d8640cc8dcbeebbe0a184dced0fe586c \
-    --hash=sha256:df427a32f7287c3715dc6b1355b8dd8525948ed3e8d8c4b8428073ed5ca66d94
+maccarone==0.1.9 \
+    --hash=sha256:4a24aa7940602807c9f7542bd49f7407fde95ce54d4b2dfcf76bac8740c11acb \
+    --hash=sha256:9d61f311b73e6f26f66146515dd3186bd61f6b5e654752978b9271b044c4b147
     # via -r ./requirements.in
 multidict==6.0.4 \
     --hash=sha256:01a3a55bd90018c9c080fbb0b9f4891db37d148a0a18722b42f94694f8b6d4c9 \
@@ -360,9 +360,9 @@ multidict==6.0.4 \
     # via
     #   aiohttp
     #   yarl
-openai==0.27.8 \
-    --hash=sha256:2483095c7db1eee274cebac79e315a986c4e55207bb4fa7b82d185b3a2ed9536 \
-    --hash=sha256:e0a7c2f7da26bdbe5354b03c6d4b82a2f34bd4458c7a17ae1a7092c3e397e03c
+openai==0.27.9 \
+    --hash=sha256:6a3cf8e276d1a6262b50562fbc0cba7967cfebb78ed827d375986b48fdad6475 \
+    --hash=sha256:b687761c82f5ebb6f61efc791b2083d2d068277b94802d4d1369efe39851813d
     # via maccarone
 packaging==23.1 \
     --hash=sha256:994793af429502c4ea2ebf6bf664629d07c1a9fe974af92966e4b8d2df7edc61 \
