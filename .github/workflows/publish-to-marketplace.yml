@@ -37,7 +37,7 @@ jobs:
       PIP_ARCH: ${{ matrix.arch }}
       TARGET_NAME: ${{ matrix.platform }}-${{ matrix.arch }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v3
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-packages
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v3
